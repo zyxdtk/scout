@@ -112,3 +112,15 @@ INFO:     127.0.0.1:52622 - "GET /api/reports?date=2026-02-24&limit=5&offset=0 H
 INFO:     127.0.0.1:52726 - "GET / HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52726 - "GET /api/items?limit=10&offset=0 HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52764 - "GET /api/items?limit=10&offset=0&task_id=fetch_latest_papers HTTP/1.1" 200 OK
+[PaperResearchSkill] Generating Chinese summary for paper: http://arxiv.org/abs/2602.15725v1
+[PaperResearchSkill] Generating Chinese summary for paper: http://arxiv.org/abs/2602.12078v1
+[PaperResearchSkill] Generating Chinese summary for paper: http://arxiv.org/abs/2602.09447v2
+[PaperResearchSkill] Generating Chinese summary for paper: http://arxiv.org/abs/2602.09132v1
+[PaperResearchSkill] Generating Chinese summary for paper: http://arxiv.org/abs/2602.09003v1
+[PaperResearchSkill] Generating Chinese summary for paper: http://arxiv.org/abs/2602.04248v1
+[AgentExecutor] Result too large (26757), truncating...
+[AgentExecutor] Result size: 10015
+[AgentExecutor] Step 2 calling LLM...
+[AgentExecutor] No tool calls detected. Task might be finished.
+[Job] Agentic execution completed for fetch_latest_papers.
+INFO:     127.0.0.1:54359 - "GET /api/items?limit=10&offset=0&task_id=fetch_x_posts HTTP/1.1" 200 OK
