@@ -1,0 +1,38 @@
+# Tools 注册表
+# 描述底层原子能力 (How)
+
+tools:
+  - name: "search_tool"
+    class: "SearchTool"
+    description: "通过搜索引擎获取网页列表"
+    enabled: true
+
+  - name: "crawl_tool"
+    class: "WebCrawlerTool"
+    description: "爬取并解析网页正文内容"
+    enabled: true
+
+  - name: "storage_tool"
+    class: "StorageTool"
+    description: "负责数据持久化、去重与 Session 存档"
+    enabled: true
+
+  - name: "rss_tool"
+    class: "RSSTool"
+    description: "从 Arxiv 等源获取内容列表"
+    enabled: true
+
+  - name: "pdf_tool"
+    class: "PDFTool"
+    description: "下载并提取 PDF 文本内容"
+    enabled: true
+
+  - name: "media_tool"
+    class: "MediaTool"
+    description: "下载推文图片、外部链接缩略图等媒体资源"
+    enabled: true
+
+  - name: "summary_tool"
+    class: "SummaryTool"
+    description: "内容深度总结与中文翻译工具"
+    enabled: true

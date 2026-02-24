@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+    <div>
+        <h1 class="text-3xl font-extrabold text-white tracking-tight mb-2">执行报告 <span
+                class="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-indigo-400">Reports</span>
+        </h1>
+        <p class="text-gray-400 text-sm">这里是 Scout 任务执行的详细过程记录与 AI 生成的深度汇总报告。</p>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="flex items-center gap-3 w-full md:w-auto">
+        <select id="taskFilter"
+            class="bg-gray-900 border border-gray-700 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition shadow-inner">
+            <option value="">所有任务 (All Tasks)</option>
+            {% for task in tasks %}
+            <option value="{{ task.id }}">{{ task.name }}</option>
+            {% endfor %}
+        </select>
+
+        <input type="date" id="dateFilter"
+            class="bg-gray-900 border border-gray-700 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition shadow-inner"
+            placeholder="YYYY-MM-DD">
+    </div>
+</div>
+
+<!-- Reports List Container -->
+<div id="reportsContainer" class="space-y-8">
+    <!-- Populated by JS -->
+</div>
+
+<!-- Loading / Sentinel -->
+<div id="loadingSentinel" class="py-12 mt-6 flex flex-col justify-center items-center text-gray-500">
+    <svg class="animate-spin h-8 w-8 text-indigo-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+        viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+        </path>
+    </svg>
+    <p class="text-sm" id="loadingText">正在加载报告...</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+    const taskFilter = document.getElementById('taskFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    const reportsContainer = document.getElementById('reportsContainer');
+    const sentinel = document.getElementById('loadingSentinel');
+    const loadingText = document.getElementById('loadingText');
+
+    const LIMIT = 5;
+    let currentOffset = 0;
+    let isFetching = false;
+    let hasMore = true;
+
+    // Default to today
+    if (!dateFilter.value) {
+        dateFilter.value = new Date().toISOString().split('T')[0];
+    }
+
+    function formatDuration(meta) {
+        if (meta.start_time && meta.end_time) {
+            const diff = Math.round((new Date(meta.end_time) - new Date(meta.start_time)) / 1000);
+            return diff + 's';
+        }
+        return '-';
+    }
+
+    function renderReportCard(report) {
+        const meta = report.metadata || {};
+        const card = document.createElement('div');
+        card.className = 'bg-gray-900/40 border border-gray-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden';
+
+        card.innerHTML = `
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-indigo-500 to-purple-500"></div>
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-indigo-500/10 rounded-lg">
+                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-white">${report.task_id || '全局'}</h2>
+                        <p class="text-xs text-gray-500">${report.date || ''}</p>
+                    </div>
+                </div>
+                <!-- Mini stats -->
+                <div class="flex items-center gap-4 text-center">
+                    <div>
+                        <p class="text-xl font-mono font-bold text-white">${meta.total_fetched || '0'}</p>
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest">抓取</p>
+                    </div>
+                    <div class="w-px h-8 bg-gray-800"></div>
+                    <div>
+                        <p class="text-xl font-mono font-bold text-emerald-400">${meta.total_new || '0'}</p>
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest">新发现</p>
+                    </div>
+                    <div class="w-px h-8 bg-gray-800"></div>
+                    <div>
+                        <p class="text-xl font-mono font-bold text-purple-400">${meta.total_high_quality || '0'}</p>
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest">优质</p>
+                    </div>
+                    <div class="w-px h-8 bg-gray-800"></div>
+                    <div>
+                        <p class="text-xl font-mono font-bold text-indigo-400">${formatDuration(meta)}</p>
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest">耗时</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Divider -->
+            <div class="border-t border-gray-800 mb-6"></div>
+            <!-- Content -->
+            <div class="prose prose-invert prose-indigo max-w-none text-gray-300 leading-relaxed space-y-4 report-body">
+                ${report.summary_report ? marked.parse(report.summary_report) : '<p class="text-gray-500 italic">该报告没有生成 AI 总结内容。</p>'}
+            </div>
+        `;
+
+        reportsContainer.appendChild(card);
+    }
+
+    async function loadReports(reset = false) {
+        if (isFetching || (!hasMore && !reset)) return;
+        isFetching = true;
+
+        if (reset) {
+            currentOffset = 0;
+            hasMore = true;
+            reportsContainer.innerHTML = '';
+            sentinel.style.display = 'flex';
+            loadingText.textContent = '正在加载报告...';
+        }
+
+        const taskId = taskFilter.value;
+        const dateVal = dateFilter.value;
+        if (!dateVal) {
+            isFetching = false;
+            return;
+        }
+
+        try {
+            const params = new URLSearchParams({ date: dateVal, limit: LIMIT, offset: currentOffset });
+            if (taskId) params.append('task_id', taskId);
+
+            const res = await fetch(`/api/reports?${params.toString()}`);
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                let reports = [];
+                if (data.report) {
+                    // Specific task: single report returned
+                    reports = [data.report];
+                    hasMore = false;
+                } else if (data.reports) {
+                    reports = data.reports;
+                }
+
+                if (reports.length === 0) {
+                    hasMore = false;
+                    sentinel.querySelector('svg').classList.add('hidden');
+                    loadingText.textContent = currentOffset === 0 ? '暂无执行报告' : '没有更多报告了';
+                } else {
+                    reports.forEach(r => renderReportCard(r));
+                    currentOffset += reports.length;
+                    if (reports.length < LIMIT) {
+                        hasMore = false;
+                        sentinel.querySelector('svg').classList.add('hidden');
+                        loadingText.textContent = '没有更多报告了';
+                    }
+                }
+            } else {
+                throw new Error(data.message || '加载失败');
+            }
+        } catch (e) {
+            console.error(e);
+            sentinel.querySelector('svg').classList.add('hidden');
+            loadingText.textContent = '报告加载失败，请重试';
+        } finally {
+            isFetching = false;
+        }
+    }
+
+    // Infinite scroll via IntersectionObserver
+    const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && !isFetching && hasMore) {
+            loadReports();
+        }
+    }, { rootMargin: '200px' });
+
+    observer.observe(sentinel);
+
+    // Filter change resets and reloads
+    taskFilter.addEventListener('change', () => loadReports(true));
+    dateFilter.addEventListener('change', () => loadReports(true));
+
+    // Auto load on entry
+    loadReports(true);
+</script>
+
+<style>
+    /* Prose overrides for report cards */
+    .report-body h3 {
+        color: #818cf8;
+        border-bottom: 1px solid rgba(129, 140, 248, 0.1);
+        padding-bottom: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .report-body blockquote {
+        border-left-color: #6366f1;
+        background: rgba(99, 102, 241, 0.05);
+        padding: 0.5rem 1rem;
+        border-radius: 0 0.5rem 0.5rem 0;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,21 @@
+# Skills 注册表
+# 描述高级业务流程 SOP (What)
+
+skills:
+  - name: "paper_research_skill"
+    class: "PaperResearchSkill"
+    description: "追踪学术论文最新进展的 SOP，包含搜索、过滤与深度摘要"
+    tools: ["search_tool", "crawl_tool", "storage_tool", "rss_tool", "pdf_tool", "summary_tool"]
+    enabled: true
+
+  - name: "market_news_skill"
+    class: "MarketNewsSkill"
+    description: "监控市场新闻与舆情的 SOP"
+    tools: ["search_tool", "crawl_tool", "storage_tool"]
+    enabled: false
+
+  - name: "x_collection_skill"
+    class: "XCollectionSkill"
+    description: "采集特定博主推文内容的 SOP"
+    tools: ["crawl_tool", "storage_tool", "rss_tool", "media_tool", "summary_tool"]
+    enabled: true

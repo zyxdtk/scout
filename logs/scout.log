@@ -1,0 +1,114 @@
+INFO:     Started server process [15241]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+Starting background scheduler...
+Syncing Cron Job: Task fetch_latest_papers - fetch_latest_papers -> 0 9 * * *
+Syncing Cron Job: Task fetch_x_posts - fetch_x_posts -> 0 */6 * * *
+INFO:     127.0.0.1:50866 - "GET /reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50866 - "GET /reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50866 - "GET /reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50900 - "GET /api/reports?task_id=fetch_latest_papers&date=2026-02-24 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50900 - "GET /api/reports?task_id=fetch_x_posts&date=2026-02-24 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50909 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50909 - "GET /api/items?limit=10&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50935 - "GET /api/items?limit=10&offset=0&task_id=fetch_latest_papers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50966 - "GET /reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51047 - "GET /reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51047 - "GET /reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51080 - "GET /api/reports?date=2026-02-24&task_id=fetch_latest_papers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51080 - "GET /api/reports?date=2026-02-24 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51101 - "GET /reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51279 - "GET /reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51279 - "GET /api/reports?date=2026-02-24 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51279 - "GET /reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51279 - "GET /api/reports?date=2026-02-24 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51402 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51402 - "GET /api/items?limit=10&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51479 - "GET /config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51638 - "POST /api/tasks/chat HTTP/1.1" 200 OK
+Syncing Cron Job: Task fetch_agi_content - fetch_agi_content -> 0 9 * * *
+Syncing Cron Job: Task fetch_x_posts - fetch_x_posts -> 0 */6 * * *
+INFO:     127.0.0.1:51693 - "PUT /api/tasks/fetch_latest_papers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51693 - "GET /config HTTP/1.1" 200 OK
+Syncing Cron Job: Task fetch_latest_papers - fetch_latest_papers -> 0 9 * * *
+Syncing Cron Job: Task fetch_x_posts - fetch_x_posts -> 0 */6 * * *
+INFO:     127.0.0.1:51757 - "PUT /api/tasks/fetch_agi_content HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51757 - "GET /config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51788 - "POST /api/tasks/fetch_latest_papers/run HTTP/1.1" 200 OK
+[Job] Starting agentic execution for task='fetch_latest_papers'...
+[AgentExecutor] Starting task: fetch_latest_papers
+[AgentExecutor] Step 1 calling LLM...
+INFO:     127.0.0.1:51788 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51788 - "GET /api/items?limit=10&offset=0 HTTP/1.1" 200 OK
+[AgentExecutor] Result size: 172
+[AgentExecutor] Step 2 calling LLM...
+[XCollectionSkill] Fetching via RSS for user: OpenAI
+[XCollectionSkill] Generating Chinese summary for tweet: https://nitter.net/sk7037/status/2026067771394838629#m
+[XCollectionSkill] Downloading image: https://nitter.net/pic/card_img%2F2024193547231248384%2FffdHHUEC%3Fformat%3Djpg%26name%3D800x419
+[XCollectionSkill] Generating Chinese summary for tweet: https://nitter.net/OpenAI/status/2024193883748651102#m
+[XCollectionSkill] Generating Chinese summary for tweet: https://nitter.net/sama/status/2023150230905159801#m
+[XCollectionSkill] Generating Chinese summary for tweet: https://nitter.net/merettm/status/2022517085193277874#m
+[XCollectionSkill] Downloading image: https://nitter.net/pic/card_img%2F2023872634341990400%2FuO0-V2bY%3Fformat%3Djpg%26name%3D420x420_2
+[XCollectionSkill] Generating Chinese summary for tweet: https://nitter.net/OpenAI/status/2022390104237707667#m
+[AgentExecutor] Result size: 7562
+[AgentExecutor] Step 3 calling LLM...
+[XCollectionSkill] Fetching via RSS for user: DeepMind
+[XCollectionSkill] RSS failed (Failed to fetch X content for DeepMind from all Nitter instances. Last error: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)>), falling back to crawler...
+[XCollectionSkill] Generating Chinese summary for tweet: None
+[AgentExecutor] Result size: 84
+[AgentExecutor] Step 4 calling LLM...
+[XCollectionSkill] Fetching via RSS for user: Anthropic
+[XCollectionSkill] Generating Chinese summary for tweet: https://nitter.net/Anthropic/status/2026100874368487737#m
+[XCollectionSkill] Generating Chinese summary for tweet: https://nitter.net/Anthropic/status/2025758208975863915#m
+INFO:     127.0.0.1:52014 - "GET /reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52014 - "GET /api/reports?date=2026-02-24&limit=5&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52014 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52014 - "GET /api/items?limit=10&offset=0 HTTP/1.1" 200 OK
+[XCollectionSkill] Generating Chinese summary for tweet: https://nitter.net/NASAAdmin/status/2025231621436186837#m
+INFO:     127.0.0.1:52064 - "GET /api/items?limit=10&offset=0&task_id=fetch_latest_papers HTTP/1.1" 200 OK
+[XCollectionSkill] Generating Chinese summary for tweet: https://nitter.net/Jack_Frodo/status/2025256835976937942#m
+[XCollectionSkill] Downloading image: https://nitter.net/pic/media%2FHBrwex4XgAAhQbo.jpg
+[XCollectionSkill] Generating Chinese summary for tweet: https://nitter.net/TychoBrahe/status/2025284676102095338#m
+[AgentExecutor] Result size: 6209
+[AgentExecutor] Step 5 calling LLM...
+[AgentExecutor] Result size: 191
+[AgentExecutor] Step 6 calling LLM...
+[AgentExecutor] Result size: 197
+[AgentExecutor] Step 7 calling LLM...
+[AgentExecutor] Result size: 197
+[AgentExecutor] Step 8 calling LLM...
+INFO:     127.0.0.1:52175 - "GET /reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52175 - "GET /api/reports?date=2026-02-24&limit=5&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52175 - "GET /config HTTP/1.1" 200 OK
+[AgentExecutor] No tool calls detected. Task might be finished.
+INFO:     127.0.0.1:52233 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52233 - "GET /api/items?limit=10&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52268 - "GET /api/items?limit=10&offset=0&task_id=fetch_latest_papers HTTP/1.1" 200 OK
+[Job] Agentic execution completed for fetch_latest_papers.
+INFO:     127.0.0.1:52308 - "POST /api/feedback HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52308 - "POST /api/feedback HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52333 - "GET /api/items?limit=10&offset=10&task_id=fetch_latest_papers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52351 - "GET /config HTTP/1.1" 200 OK
+Syncing Cron Job: Task fetch_latest_papers - fetch_latest_papers -> 0 9 * * *
+Syncing Cron Job: Task fetch_x_posts - fetch_x_posts -> 0 */6 * * *
+INFO:     127.0.0.1:52525 - "PUT /api/tasks/fetch_latest_papers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52525 - "GET /config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52562 - "POST /api/tasks/fetch_latest_papers/run HTTP/1.1" 200 OK
+[Job] Starting agentic execution for task='fetch_latest_papers'...
+[AgentExecutor] Starting task: fetch_latest_papers
+[AgentExecutor] Step 1 calling LLM...
+INFO:     127.0.0.1:52580 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52580 - "GET /api/items?limit=10&offset=0 HTTP/1.1" 200 OK
+[PaperResearchSkill] Generating Chinese summary for paper: http://arxiv.org/abs/2602.18846v1
+INFO:     127.0.0.1:52608 - "GET /api/items?limit=10&offset=0&task_id=fetch_latest_papers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52622 - "GET /reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52622 - "GET /api/reports?date=2026-02-24&limit=5&offset=0 HTTP/1.1" 200 OK
+[PDFTool] Fetching URL: http://arxiv.org/pdf/2602.18600v1.pdf
+[PaperResearchSkill] Generating Chinese summary for paper: http://arxiv.org/abs/2602.18600v1
+[PDFTool] Fetching URL: http://arxiv.org/pdf/2602.18308v1.pdf
+[PaperResearchSkill] Generating Chinese summary for paper: http://arxiv.org/abs/2602.18308v1
+[PaperResearchSkill] Generating Chinese summary for paper: http://arxiv.org/abs/2602.16109v1
+INFO:     127.0.0.1:52726 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52726 - "GET /api/items?limit=10&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52764 - "GET /api/items?limit=10&offset=0&task_id=fetch_latest_papers HTTP/1.1" 200 OK

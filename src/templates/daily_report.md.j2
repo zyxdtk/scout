@@ -1,0 +1,26 @@
+# {{ date }} - Scout 每日简报
+
+{% if items %}
+{% for item, result in items %}
+## {{ loop.index }}. [{{ item.title }}]({{ item.url }})
+- **来源**: `{{ item.source }}`
+- **发布时间**: {{ item.publish_time.strftime('%Y-%m-%d %H:%M') }}
+- **相关性得分**: {{ result.score }} / 100
+
+### 核心摘要
+> {{ result.summary }}
+
+---
+**为什么推荐这篇？**  
+*{{ result.reason }}*
+
+[👍 赞](#) | [👎 踩](#)
+{% if not loop.last %}
+
+<br>
+
+{% endif %}
+{% endfor %}
+{% else %}
+今天没有发现符合你兴趣的新鲜事。
+{% endif %}

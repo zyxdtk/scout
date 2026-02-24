@@ -1,0 +1,53 @@
+# Scout 项目变更历史
+
+## 2026-02-24
+- **Agent 编排层升级 (Phase 13)**：
+  - 移除了 `plan.xml` 生成逻辑，引入了直接驱动的 `AgentExecutor`。
+  - 任务现在通过 `data/tasks/*.md` 文件定义。
+  - 实现了基于 XML 标签（`<thought>`, `<call>`）的工具调用协议，兼容非 native tool calling 模型。
+  - 支持动态注入技能签名，提升 Agent 参数准确性。
+  - 引入结果截断机制，防止 LLM 上下文溢出 (400 错误)。
+- **SSL 校验优化**：
+  - 在 `BaseTool` 中全局静默了 `InsecureRequestWarning`，提升日志整洁度。
+- **智能摘要与翻译**：
+  - 引入了 `SummaryTool`，并在 `PaperResearchSkill` 中集成。
+  - 支持长篇论文自动提炼及英文内容的中文翻译。
+- **结构化日报存储 (Phase 15.1)**：
+  - 废弃了 `DataExporter`，将单篇信息落地逻辑整合入 `StorageTool` 的 `save_daily_item`。
+  - 数据现在以 JSON 格式落盘至 `data/daily/`，支持更精细的报告展示。
+  - **路径整合 (15.1)**：实现了从 `AgentExecutor` 到技能的 `task_id` 注入。任务名为 `fetch_x_posts` 的监控任务，其下属 Elon Musk 和 Karpathy 的采集数据现在均统一归档于 `/data/daily/fetch_x_posts/` 目录下，彻底解决了多账号监控时的目录碎片化问题。
+- **新增与重构测试用例 (Phase 16.1)**：
+  - 添加了 `fetch_x_posts` 任务测试，验证了 X 推文采集、多媒体下载及结构化存档的全流程。
+  - **测试重构 (16.1)**：将任务级 E2E 测试迁移至 `tests/task/` 目录，并全面适配为 `pytest` 格式，引入了数据库状态清理固件，提升了测试的独立性与可靠性。
+- **数据库-文件同步机制 (Phase 17)**：
+  - 实现了 `sync_db` Action，用于清理数据库中因手动删除物理文件而留下的“孤立记录”。
+  - 提供了 `scripts/sync_db.py` 维护脚本，确保“真相来源”（文件系统）与“状态管理”（数据库）的一致性。
+- **数据库 Schema 瘦身 (Phase 18)**：
+  - 删除了冗余的 `daily_summaries` 表，将所有报告存储统一归集至 `execution_reports`。
+  - 重构了 `StateManager` 和 API 接口，移除了 fallback 逻辑，提升了数据存取的一致性。
+- **双向同步与可见性修复 (Phase 19)**：
+  - 升级 `StorageTool.sync_db` 支持双向同步：不仅清理孤立记录，还能从磁盘 JSON 文件中补充数据库缺失的元数据。
+  - 优化 `StateManager` 查询逻辑，放宽了对 `score` 字段的硬性展示要求，解决了推文无法在 Web UI 显示的问题。
+- **Web UI 页面解耦与逻辑重构 (Phase 20)**：
+  - 拆分了首页功能，将抓取到的内容项（Items）与任务执行报告（Reports）完全分离。
+  - 重构了 `StateManager.get_items_by_task_and_date`，移除了内置的报告查询逻辑，实现了数据检索的垂直化。
+  - 引入了 `reports.html` 专用模板与 `/reports` 路由。
+  - 完善了全局导航系统，提升了管理后台的操作体验。
+- **报告生成质量优化 (Phase 21)**：
+  - 规范化了 `AgentExecutor` 输出的终期报告格式。
+  - 明确了“运行状态、原文列表、内容总结”的三段式结构要求。
+- **Session 存储结构优化与文档清理 (Phase 22)**：
+  - 将 `StorageTool` 中的 Session 存储路径重构为 `data/sessions/{task_id}/{date}/`，实现全项目存储路径的标准化。
+  - 同步更新了 `docs/technical_design.md`，清理了数据库 Schema 中的冗余描述。
+- **执行报告筛选逻辑修正 (Phase 23)**：
+  - 修正了“执行报告”页面的任务筛选 Bug，允许在未选择具体任务时正确识别 `task_id` 为 `None`。
+- **全局执行报告查询支持 (Phase 24)**：
+  - 升级 `StateManager.get_execution_report`，支持在 `task_id` 为空时自动返回该日期下最近一次执行的报告。
+  - 通过 `/api/reports` 接口实现了“无感筛选”下的自动匹配，提升了用户在报表页面的首次进入体验。
+- **条目摘要 Markdown 化 (Phase 25)**：
+  - 升级 `LLMSummarizer` 提示词，使生成的单条资讯摘要支持 Markdown 格式（如加粗关键词）。
+  - 首页 `index.html` 引入 `marked.js` 渲染引擎，提升了资讯流的视觉呈现效果。
+- **资讯展示布局优化 (Phase 26)**：
+  - 优化了首页卡片布局，通过 `min-w-0` 等 CSS 技巧彻底解决了长内容遮挡交互按钮的问题。
+- **摘要展示简化 (Phase 27)**：
+  - 移除了摘要区域的限高与滚动条逻辑，改为完全的自动换行与垂直展开，满足用户对内容直观完整展示的偏好。

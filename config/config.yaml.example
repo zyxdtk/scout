@@ -1,0 +1,8 @@
+llm:
+  # 填写你的 API Key (或 OpenClaw Gateway Key)
+  api_key: "sk-your-api-key-here"
+  # 指向提供 OpenAI 标准格式接口的服务地址
+  base_url: "https://api.openai.com/v1"
+  # 你期望使用的模型
+  model_name: "gpt-4o"
+  timeout: 30

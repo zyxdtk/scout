@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+    <div>
+        <h1 class="text-3xl font-extrabold text-white tracking-tight mb-2">智能体编排中心 <span
+                class="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400">Agentic
+                Config</span></h1>
+        <p class="text-gray-400 text-sm">通过撰写 Markdown 需求文档 (task.md)，指挥后台智能体自动为您动态抓取和提纯多源信息。</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="w-full md:w-64">
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+            <input type="text" id="searchInput"
+                class="bg-gray-900 border border-gray-700 text-white text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 p-2.5"
+                placeholder="搜索任务名称..." onkeyup="filterTasks()">
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Tasks List -->
+    <div class="lg:col-span-1 space-y-4">
+        <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-800 pb-2 mb-4">活跃智能体清单 (Agents)</h2>
+
+        <div id="tasksList" class="space-y-4">
+            {% if tasks %}
+            {% for task in tasks %}
+            <div class="task-card bg-gray-900/60 border border-gray-800 rounded-xl p-5 flex flex-col justify-between items-start gap-4 hover:border-indigo-500 cursor-pointer transition shadow-sm"
+                onclick="editTask(this)" data-id="{{ task.id }}" data-name="{{ task.name }}"
+                data-cron="{{ task.cron }}">
+
+                <!-- Invisible instruction text payload -->
+                <textarea class="hidden task-instruction-payload">{{ task.instruction }}</textarea>
+
+                <div class="flex justify-between w-full">
+                    <div>
+                        <h3 class="task-name text-white font-medium flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            {{ task.name }}.md
+                            {% if task.is_active %}
+                            <span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+                            {% else %}
+                            <span class="w-2 h-2 rounded-full bg-gray-500"></span>
+                            {% endif %}
+                        </h3>
+                        <p class="text-sm text-gray-400 mt-2 font-mono text-xs line-clamp-2">
+                            {{ task.instruction | truncate(60) }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="w-full mt-2 pt-3 border-t border-gray-800">
+                    <div class="flex items-center justify-between text-xs text-gray-500">
+                        <div class="flex items-center bg-gray-900 px-2 py-1 rounded">
+                            <svg class="w-3 h-3 mr-1 text-emerald-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="font-mono">{{ task.cron }}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="runTask('{{ task.id }}', this); event.stopPropagation();"
+                                class="text-indigo-400 hover:text-indigo-300 transition" title="立即触发">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                            <button onclick="deleteTask('{{ task.id }}', this); event.stopPropagation();"
+                                class="text-gray-500 hover:text-red-400 transition" title="删除需求文档">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-center py-10 bg-gray-900/30 rounded-xl border border-dashed border-gray-700">
+                <p class="text-gray-500 text-sm">目录空空如也，请在右侧编写您的第一个需求文档。</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Side Panel -->
+    <div class="lg:col-span-2 space-y-6">
+
+        <!-- NLP Configurator Chatbox -->
+        <div
+            class="bg-gradient-to-br from-indigo-900/40 to-purple-900/20 border border-indigo-500/30 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+            </div>
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                        <span class="text-lg">✨</span> 需求沟通台 / Prompt Engineer
+                    </h2>
+                    <p class="text-xs text-indigo-300/80 mb-3 leading-relaxed">让大模型替你写出完美的 Markdown
+                        指令。描述你想做的事情（例如“我想每天订阅 AI 相关的热点文章和特斯拉相关的股票波动”）</p>
+                </div>
+            </div>
+
+            <div class="relative">
+                <textarea id="aiChatInput" rows="2"
+                    class="w-full bg-gray-950/50 border border-indigo-500/30 rounded-lg p-3 pr-12 text-sm text-white focus:outline-none focus:border-indigo-400 transition resize-none placeholder-indigo-900/50"
+                    placeholder="自然语言输入需求..."></textarea>
+                <button id="aiChatBtn" onclick="generateConfig()"
+                    class="absolute bottom-2 right-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg px-3 py-1.5 transition text-xs font-medium shadow">
+                    让 AI 生成配置 ⭐️
+                </button>
+            </div>
+        </div>
+
+        <!-- Markdown Editor Form -->
+        <div class="bg-gray-900/80 border border-gray-800 rounded-2xl p-6 relative flex flex-col h-[700px]">
+            <h2 id="formTitle" class="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                    </path>
+                </svg>
+                编写 task.md (Agent Instruction)
+            </h2>
+
+            <form id="taskForm" class="flex flex-col flex-1">
+                <input type="hidden" id="taskId" value="">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-1">文件名 (Task Name) <span
+                                class="text-red-400">*</span></label>
+                        <div class="flex items-center">
+                            <input type="text" id="name" required pattern="^[a-zA-Z0-9_]+$"
+                                placeholder="如: daily_ai_news" title="仅允许英文字母、数字和下划线"
+                                class="flex-1 bg-gray-950 border border-gray-700 rounded-l-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition placeholder-gray-600 font-mono">
+                            <span
+                                class="bg-gray-800 border-y border-r border-gray-700 px-3 py-2 rounded-r-lg text-sm text-gray-400 font-mono">.md</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-1">执行周期 (Cron Schedule) <span
+                                class="text-red-400">*</span></label>
+                        <input type="text" id="cron" required placeholder="如: 0 8 * * *"
+                            class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition placeholder-gray-600 font-mono">
+                    </div>
+                </div>
+
+                <div class="flex-1 flex flex-col mb-4">
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-medium text-gray-400">文件内容 (Markdown Instruction) <span
+                                class="text-red-400">*</span></label>
+                        <span class="text-[10px] text-gray-500">编写详细的采集需求，AI 会自动为您分析并执行</span>
+                    </div>
+                    <!-- Fake code editor look -->
+                    <div
+                        class="flex-1 bg-gray-950 border border-gray-700 rounded-lg overflow-hidden flex flex-col focus-within:border-emerald-500 transition shadow-inner">
+                        <div
+                            class="bg-gray-900 border-b border-gray-800 px-3 py-1 flex gap-1.5 items-center justify-start">
+                            <div class="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
+                            <span
+                                class="ml-2 text-[10px] text-gray-600 font-mono font-semibold tracking-wider uppercase">Instruction
+                                Editor</span>
+                        </div>
+                        <textarea id="instruction" required
+                            placeholder="# 任务目标&#10;每天早晨需要了解业界最新动态...&#10;&#10;## 采集源&#10;订阅 arxiv 有关于大模型的内容...&#10;&#10;## 提纯原则&#10;不需要繁多的公式推导，仅提取结论。"
+                            class="flex-1 w-full bg-transparent p-4 text-sm text-gray-300 focus:outline-none resize-none font-mono leading-relaxed placeholder-gray-700"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-auto">
+                    <button type="button" id="cancelEditBtn" onclick="resetForm()"
+                        class="hidden w-1/4 bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-2.5 px-4 rounded-lg transition border border-gray-700 text-sm">
+                        取消编辑
+                    </button>
+                    <button type="submit" id="submitBtn"
+                        class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium py-2.5 px-4 rounded-lg transition shadow-lg shadow-emerald-500/20 text-sm flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4">
+                            </path>
+                        </svg>
+                        保存并下发给 ConfigAgent 编译
+                    </button>
+                    <button type="button" id="runDirectBtn" onclick="runDirect()"
+                        class="hidden bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 px-6 rounded-lg transition shadow-lg shadow-indigo-500/20 text-sm flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                        立即执行此任务
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Search Filter
+    function filterTasks() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const cards = document.querySelectorAll('.task-card');
+
+        cards.forEach(card => {
+            const name = card.getAttribute('data-name').toLowerCase();
+            const instruction = card.querySelector('.task-instruction-payload').value.toLowerCase();
+
+            if (name.includes(query) || instruction.includes(query)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // AI Configurator Chat
+    async function generateConfig() {
+        const inputEl = document.getElementById('aiChatInput');
+        const btnEl = document.getElementById('aiChatBtn');
+        const originalBtnHTML = btnEl.innerHTML;
+        const userInput = inputEl.value.trim();
+
+        if (!userInput) return;
+
+        btnEl.innerHTML = `<svg class="animate-spin w-4 h-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating...`;
+        btnEl.disabled = true;
+
+        try {
+            const res = await fetch('/api/tasks/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_input: userInput })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.status === 'success') {
+                const config = data.data;
+                // Auto-fill form
+                document.getElementById('name').value = config.name || '';
+                document.getElementById('instruction').value = config.instruction || '';
+                document.getElementById('cron').value = config.cron || '0 8 * * *';
+
+                // Highlight config textarea momentarily
+                const instructionOuter = document.getElementById('instruction').parentElement;
+                instructionOuter.classList.add('border-indigo-500', 'shadow-[0_0_15px_rgba(99,102,241,0.5)]');
+                setTimeout(() => {
+                    instructionOuter.classList.remove('border-indigo-500', 'shadow-[0_0_15px_rgba(99,102,241,0.5)]');
+                }, 2000);
+            } else {
+                alert('智能生成失败: ' + (data.message || 'Unknown error'));
+            }
+        } catch (e) {
+            console.error(e);
+            alert('网络或服务异常。');
+        } finally {
+            btnEl.innerHTML = originalBtnHTML;
+            btnEl.disabled = false;
+        }
+    }
+
+    // Edit Mode Toggle
+    function editTask(card) {
+        // Un-highlight all
+        document.querySelectorAll('.task-card').forEach(c => c.classList.remove('ring-2', 'ring-indigo-500', 'border-indigo-500'));
+        // Highlight active
+        card.classList.add('ring-2', 'ring-indigo-500', 'border-indigo-500');
+
+        const id = card.getAttribute('data-id');
+        const name = card.getAttribute('data-name');
+        const instruction = card.querySelector('.task-instruction-payload').value;
+
+        document.getElementById('taskId').value = id;
+        document.getElementById('name').value = name;
+        document.getElementById('instruction').value = instruction;
+        document.getElementById('cron').value = card.getAttribute('data-cron') || '0 8 * * *';
+
+        document.getElementById('formTitle').innerHTML = `
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            审阅/修改指令文档: <span class="text-indigo-200">${name}.md</span>
+        `;
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.className = "flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2.5 px-4 rounded-lg transition shadow-lg shadow-blue-500/20 text-sm flex items-center justify-center gap-2";
+        submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg> 保存更改并重新编译`;
+
+        document.getElementById('cancelEditBtn').classList.remove('hidden');
+        document.getElementById('runDirectBtn').classList.remove('hidden');
+
+        // Mobile scroll to form
+        if (window.innerWidth < 1024) {
+            document.getElementById('taskForm').parentElement.scrollIntoView({ behavior: "smooth" });
+        }
+    }
+
+    function resetForm() {
+        document.querySelectorAll('.task-card').forEach(c => c.classList.remove('ring-2', 'ring-indigo-500', 'border-indigo-500'));
+        document.getElementById('taskForm').reset();
+        document.getElementById('taskId').value = "";
+        document.getElementById('cron').value = "";
+
+        document.getElementById('formTitle').innerHTML = `
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            编写 task.md (Agent Instruction)
+        `;
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.className = "flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium py-2.5 px-4 rounded-lg transition shadow-lg shadow-emerald-500/20 text-sm flex items-center justify-center gap-2";
+        submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg> 写入文件并下发给 ConfigAgent`;
+
+        document.getElementById('cancelEditBtn').classList.add('hidden');
+        document.getElementById('runDirectBtn').classList.add('hidden');
+    }
+
+    // Form submission
+    document.getElementById('taskForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const taskId = document.getElementById('taskId').value;
+        const payload = {
+            name: document.getElementById('name').value,
+            instruction: document.getElementById('instruction').value,
+            cron: document.getElementById('cron').value,
+        };
+
+        const submitBtn = document.getElementById('submitBtn');
+        const originHTML = submitBtn.innerHTML;
+        submitBtn.innerHTML = "Agent 正在编译计划中...";
+        submitBtn.disabled = true;
+
+        try {
+            const method = taskId ? 'PUT' : 'POST';
+            const url = taskId ? `/api/tasks/${taskId}` : '/api/tasks';
+
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (res.ok && data.status === 'success') {
+                window.location.reload();
+            } else {
+                alert('保存失败: ' + (data.message || '未知错误'));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("发生异常，可能是大模型编译超时，见后台日志。");
+        } finally {
+            submitBtn.innerHTML = originHTML;
+            submitBtn.disabled = false;
+        }
+    });
+
+    // Delete Task
+    async function deleteTask(id, btn) {
+        if (!confirm("确定要删除这个需求文档及其相关配置吗？")) return;
+        btn.closest('.task-card').style.opacity = '0.5';
+        try {
+            const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+            if (res.ok) window.location.reload();
+        } catch (e) { console.error(e); }
+    }
+
+    // Manual Run Button in card
+    async function runTask(id, btn) {
+        if (!confirm("这会对底层多数据源发出请求，是否执行？")) return;
+
+        // Change icon to spiiner
+        const iconSpan = btn.innerHTML;
+        btn.innerHTML = `<svg class="animate-spin w-4 h-4 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`/api/tasks/${id}/run`, { method: 'POST' });
+            if (res.ok) {
+                // Return to normal immediately but maybe show a success color
+                btn.innerHTML = `<svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>`;
+            } else {
+                btn.innerHTML = `<svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>`;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+
+        setTimeout(() => {
+            btn.innerHTML = iconSpan;
+            btn.disabled = false;
+        }, 3000);
+    }
+
+    // Manual Run Button in Editor
+    function runDirect() {
+        const id = document.getElementById('taskId').value;
+        if (id) {
+            const btn = document.getElementById('runDirectBtn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<svg class="animate-spin w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 执行中...`;
+            runTask(id, btn).then(() => {
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                }, 3000);
+            })
+        }
+    }
+</script>
+{% endblock %}
