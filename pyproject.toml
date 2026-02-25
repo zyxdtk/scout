@@ -26,3 +26,6 @@ dependencies = [
 override-dependencies = [
     "numpy<2.0.0",
 ]
+
+[tool.uv.extra-build-dependencies]
+pandas = ["pkg_resources"]
