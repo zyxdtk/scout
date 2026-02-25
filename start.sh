@@ -8,7 +8,7 @@
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$BASE_DIR"
 
-PORT=8000
+PORT=9333
 LOG_DIR="$BASE_DIR/logs"
 LOG_FILE="$LOG_DIR/scout.log"
 mkdir -p "$LOG_DIR"

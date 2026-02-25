@@ -65,4 +65,4 @@ app.include_router(api_router)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("src.main_web:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("src.main_web:app", host="0.0.0.0", port=9333, reload=True)
