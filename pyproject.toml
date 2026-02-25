@@ -19,7 +19,7 @@ dependencies = [
     "uvicorn>=0.41.0",
     "yfinance>=1.2.0",
     "numpy<2.0.0",
-    "pandas<2.1.0",
+    "pandas==2.2.3",
 ]
 
 [tool.uv]
@@ -27,6 +27,3 @@ override-dependencies = [
     "numpy<2.0.0",
     "oldest-supported-numpy<2.0.0",
 ]
-
-[tool.uv.extra-build-dependencies]
-pandas = ["setuptools", "wheel", "Cython<3"]
